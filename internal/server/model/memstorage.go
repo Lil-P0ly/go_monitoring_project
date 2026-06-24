@@ -1,7 +1,5 @@
 package models
 
-import "strconv"
-
 type MemStorage struct {
 	CounterMetrics map[string][]int64
 	GaugeMetrics   map[string][]float64
@@ -21,25 +19,12 @@ func NewMemStorage() *MemStorage {
 	}
 }
 
-func (ms *MemStorage) AddGauge(metricName, metricValueStr string) error {
+func (ms *MemStorage) AddGauge(metricName string, metricValue float64) {
 
-	metrics_value, err := strconv.ParseFloat(metricValueStr, 64)
-
-	if err != nil {
-		return err
-	}
-	ms.GaugeMetrics[metricName] = append(ms.GaugeMetrics[metricName], float64(metrics_value))
-	return nil
+	ms.GaugeMetrics[metricName] = append(ms.GaugeMetrics[metricName], metricValue)
 }
 
-func (ms *MemStorage) AddCounter(metricName, metricValueStr string) error {
+func (ms *MemStorage) AddCounter(metricName string, metricValue int64) {
 
-	metrics_value, err := strconv.Atoi(metricValueStr)
-
-	if err != nil {
-		return err
-	}
-
-	ms.CounterMetrics[metricName] = append(ms.CounterMetrics[metricName], int64(metrics_value))
-	return nil
+	ms.CounterMetrics[metricName] = append(ms.CounterMetrics[metricName], metricValue)
 }

@@ -33,19 +33,24 @@ func (msh *MemoryStorageHandler) AddValue(w http.ResponseWriter, r *http.Request
 	switch metricType {
 	case string(models.MetricsTypeGauge):
 		log.Println("update gauge")
-		err := msh.Storage.AddGauge(metricName, metricValueStr)
+		metricValue, err := strconv.ParseFloat(metricValueStr, 64)
 		if err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
+		msh.Storage.AddGauge(metricName, metricValue)
+
 	case string(models.MetricsTypeCounter):
 		log.Println("update counter")
 
-		err := msh.Storage.AddCounter(metricName, metricValueStr)
+		metricValue, err := strconv.ParseInt(metricValueStr, 10, 64)
+
 		if err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
+		msh.Storage.AddCounter(metricName, metricValue)
+
 	default:
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
