@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -11,48 +12,85 @@ type MemStorage struct {
 	Gauge_metrics   map[string][]float64
 }
 
-func (ms *MemStorage) AddGauge(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	metric_name := r.PathValue("metric_name")
+type Mestrics_type string
 
-	metrics_value_str := r.PathValue("metrics_value")
+const (
+	Metrics_type_counter Mestrics_type = "counter"
+	Metrics_type_gauge   Mestrics_type = "gauge"
+)
+
+func (ms *MemStorage) AddGauge(metric_name, metrics_value_str string) error {
 
 	metrics_value, err := strconv.ParseFloat(metrics_value_str, 64)
 
 	if err != nil {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
+		return err
 	}
 	ms.Gauge_metrics[metric_name] = append(ms.Gauge_metrics[metric_name], float64(metrics_value))
-
-	w.WriteHeader(http.StatusOK)
-
+	return nil
 }
 
-func (ms *MemStorage) AddCounter(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	metric_name := r.PathValue("metric_name")
-
-	metrics_value_str := r.PathValue("metrics_value")
+func (ms *MemStorage) AddCounter(metric_name, metrics_value_str string) error {
 
 	metrics_value, err := strconv.Atoi(metrics_value_str)
 
 	if err != nil {
+		return err
+	}
+
+	ms.Counter_metrics[metric_name] = append(ms.Counter_metrics[metric_name], int64(metrics_value))
+	return nil
+}
+
+func (ms *MemStorage) AddValue(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	metric_type := r.PathValue("metrics_type")
+	metric_name := r.PathValue("metric_name")
+	metrics_value_str := r.PathValue("metrics_value")
+
+	switch metric_type {
+	case string(Metrics_type_gauge):
+		log.Println("update gauge")
+		err := ms.AddGauge(metric_name, metrics_value_str)
+		if err != nil {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+	case string(Metrics_type_counter):
+		log.Println("update counter")
+
+		err := ms.AddCounter(metric_name, metrics_value_str)
+		if err != nil {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+	default:
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	ms.Counter_metrics[metric_name] = append(ms.Counter_metrics[metric_name], int64(metrics_value))
-
 	w.WriteHeader(http.StatusOK)
-
 }
 
+func (ms *MemStorage) NotFound(w http.ResponseWriter, r *http.Request) {
+	log.Println("Not found handler")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	metric_type := r.PathValue("metrics_type")
+
+	if metric_type != string(Metrics_type_counter) && metric_type != string(Metrics_type_gauge) {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+	}
+	http.Error(w, "Not Found", http.StatusNotFound)
+
+}
 func (ms *MemStorage) PrintMetrics(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -93,8 +131,11 @@ func main() {
 	mux := http.NewServeMux()
 
 	ms := NewMemStorage()
-	mux.HandleFunc("/update/counter/{metric_name}/{metrics_value}", ms.AddCounter)
-	mux.HandleFunc("/update/gauge/{metric_name}/{metrics_value}", ms.AddGauge)
+
+	mux.HandleFunc("/update/{metrics_type}/{metric_name}/{metrics_value}", ms.AddValue)
+
+	mux.HandleFunc("/update/{metrics_type}/", ms.NotFound)
+
 	mux.HandleFunc("/metrics", ms.PrintMetrics)
 
 	http.ListenAndServe(":8080", mux)
