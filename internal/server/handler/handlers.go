@@ -27,7 +27,7 @@ func (msh *MemoryStorageHandler) AddValue(w http.ResponseWriter, r *http.Request
 	}
 
 	metricType := r.PathValue("metrics_type")
-	metricName := r.PathValue("metricName")
+	metricName := r.PathValue("metrics_name")
 	metricValueStr := r.PathValue("metrics_value")
 
 	switch metricType {

@@ -12,7 +12,7 @@ func main() {
 
 	msh := handler.NewMSHandler()
 
-	mux.HandleFunc("/update/{metrics_type}/{metricName}/{metrics_value}", msh.AddValue)
+	mux.HandleFunc("/update/{metrics_type}/{metrics_name}/{metrics_value}", msh.AddValue)
 
 	mux.HandleFunc("/update/{metrics_type}/", msh.NotFound)
 
