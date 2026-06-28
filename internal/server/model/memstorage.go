@@ -28,3 +28,11 @@ func (ms *MemStorage) AddCounter(metricName string, metricValue int64) {
 
 	ms.CounterMetrics[metricName] = append(ms.CounterMetrics[metricName], metricValue)
 }
+
+func (ms *MemStorage) GetGauges() map[string][]float64 {
+	return ms.GaugeMetrics
+}
+
+func (ms *MemStorage) GetCounters() map[string][]int64 {
+	return ms.CounterMetrics
+}
