@@ -55,7 +55,7 @@ func (m *Metrics) SendMetrics() error {
 		_, err := http.Post(url, "text/plain", nil)
 
 		if err != nil {
-			log.Fatalf("Failed send metrics to server")
+			log.Printf("Failed send metrics to server, %v", err)
 			return err
 		}
 		// log.Println(resp.StatusCode)
@@ -66,7 +66,7 @@ func (m *Metrics) SendMetrics() error {
 		_, err := http.Post(url, "text/plain", nil)
 
 		if err != nil {
-			log.Fatalf("Failed send metrics to server")
+			log.Printf("Failed send metrics to server, %v", err)
 			return err
 		}
 		// log.Println(resp.StatusCode)
