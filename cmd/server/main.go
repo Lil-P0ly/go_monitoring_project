@@ -5,12 +5,15 @@ import (
 	"net/http"
 
 	"github.com/Lil-P0ly/go_monitoring_project/internal/server/handler"
+	models "github.com/Lil-P0ly/go_monitoring_project/internal/server/model"
 )
 
 func main() {
 	mux := http.NewServeMux()
 
-	msh := handler.NewMSHandler()
+	memStorage := models.NewMemStorage()
+
+	msh := handler.NewMSHandlerWithStorage(memStorage)
 
 	mux.HandleFunc("/update/{metrics_type}/{metrics_name}/{metrics_value}", msh.AddValue)
 

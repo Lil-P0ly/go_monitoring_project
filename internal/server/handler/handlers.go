@@ -13,10 +13,14 @@ type MemoryStorageHandler struct {
 	Storage models.Storage
 }
 
-func NewMSHandler() *MemoryStorageHandler {
-	return &MemoryStorageHandler{
-		Storage: models.NewMemStorage(),
-	}
+// func NewMSHandler() *MemoryStorageHandler {
+// 	return &MemoryStorageHandler{
+// 		Storage: models.NewMemStorage(),
+// 	}
+// }
+
+func NewMSHandlerWithStorage(s models.Storage) *MemoryStorageHandler {
+	return &MemoryStorageHandler{Storage: s}
 }
 
 func (msh *MemoryStorageHandler) AddValue(w http.ResponseWriter, r *http.Request) {

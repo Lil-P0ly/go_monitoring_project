@@ -1,9 +1,7 @@
 package main
 
-import (
-	"github.com/Lil-P0ly/go_monitoring_project/internal/agent"
-)
+import "github.com/Lil-P0ly/go_monitoring_project/internal/agent/model"
 
 func main() {
-	agent.Run()
+	model.Run()
 }

@@ -7,13 +7,15 @@ import (
 	"strings"
 	"testing"
 
+	models "github.com/Lil-P0ly/go_monitoring_project/internal/server/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMemoryStorageHandlerAddValue(t *testing.T) {
-	ms := NewMSHandler()
+	memStorage := models.NewMemStorage()
 
+	msh := NewMSHandlerWithStorage(memStorage)
 	type path struct {
 		metricType     string
 		metricName     string
@@ -81,7 +83,7 @@ func TestMemoryStorageHandlerAddValue(t *testing.T) {
 
 			w := httptest.NewRecorder()
 
-			ms.AddValue(w, request)
+			msh.AddValue(w, request)
 			res := w.Result()
 			assert.Equal(t, tt.wantStatusCode, res.StatusCode)
 
@@ -96,8 +98,9 @@ func TestMemoryStorageHandlerAddValue(t *testing.T) {
 }
 
 func TestNotFound(t *testing.T) {
-	ms := NewMSHandler()
+	memStorage := models.NewMemStorage()
 
+	msh := NewMSHandlerWithStorage(memStorage)
 	type path struct {
 		metricType string
 		metricName string
@@ -142,7 +145,7 @@ func TestNotFound(t *testing.T) {
 
 			w := httptest.NewRecorder()
 
-			ms.NotFound(w, request)
+			msh.NotFound(w, request)
 			res := w.Result()
 			assert.Equal(t, tt.wantStatusCode, res.StatusCode)
 
