@@ -1,6 +1,6 @@
 package model
 
 type Metrics interface {
-	SendMetrics(url string) error
+	SendMetrics(string) error
 	CollectMetrics()
 }

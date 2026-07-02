@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"runtime"
-	"time"
 )
 
 var MetricsNames = []string{
@@ -38,9 +37,6 @@ var MetricsNames = []string{
 	"Sys",
 	"TotalAlloc",
 }
-
-var pollInterval = 2 * time.Second
-var reportInterval = 10 * time.Second
 
 type MetricsMap struct {
 	GaugeMetrics   map[string]float64
@@ -123,23 +119,4 @@ func NewMetricsMap() *MetricsMap {
 		CounterMetrics: make(map[string]int64),
 		GaugeMetrics:   make(map[string]float64),
 	}
-}
-
-func Run() {
-	m := NewMetricsMap()
-
-	tickerCollect := time.NewTicker(pollInterval)
-	tickerSend := time.NewTicker(reportInterval)
-
-	defer tickerCollect.Stop()
-	defer tickerSend.Stop()
-	for {
-		select {
-		case <-tickerCollect.C:
-			m.CollectMetrics()
-		case <-tickerSend.C:
-			m.SendMetrics("localhost:8080")
-		}
-	}
-
 }
