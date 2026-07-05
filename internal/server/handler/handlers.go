@@ -10,13 +10,17 @@ import (
 )
 
 type MemoryStorageHandler struct {
-	Storage *models.MemStorage
+	Storage models.Storage
 }
 
-func NewMSHandler() *MemoryStorageHandler {
-	return &MemoryStorageHandler{
-		Storage: models.NewMemStorage(),
-	}
+// func NewMSHandler() *MemoryStorageHandler {
+// 	return &MemoryStorageHandler{
+// 		Storage: models.NewMemStorage(),
+// 	}
+// }
+
+func NewMSHandlerWithStorage(s models.Storage) *MemoryStorageHandler {
+	return &MemoryStorageHandler{Storage: s}
 }
 
 func (msh *MemoryStorageHandler) AddValue(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +86,7 @@ func (msh *MemoryStorageHandler) PrintMetrics(w http.ResponseWriter, r *http.Req
 	}
 	response := ""
 	response += fmt.Sprintf("Counter Metrics ---- \n")
-	for k, v := range msh.Storage.CounterMetrics {
+	for k, v := range msh.Storage.GetCounters() {
 		response += fmt.Sprintf("Metric - %s: ", k)
 		for _, val := range v {
 			response += strconv.Itoa(int(val)) + " "
@@ -90,7 +94,7 @@ func (msh *MemoryStorageHandler) PrintMetrics(w http.ResponseWriter, r *http.Req
 		response += fmt.Sprintf("\n")
 	}
 	response += fmt.Sprintf("Gauge Metrics ---- \n")
-	for k, v := range msh.Storage.GaugeMetrics {
+	for k, v := range msh.Storage.GetGauges() {
 		response += fmt.Sprintf("Metric - %s: ", k)
 		for _, val := range v {
 			response += fmt.Sprintf("%.2f ", val)
