@@ -76,10 +76,15 @@ func (m *MetricsMap) CollectMetrics() {
 	var memStat runtime.MemStats
 	runtime.ReadMemStats(&memStat)
 
+	log.Println("Load Runtime metrics")
+	log.Println("Start parsing metrics")
+	m.ParseMetricsToStruct(memStat)
+
+}
+
+func (m *MetricsMap) ParseMetricsToStruct(memStat runtime.MemStats) {
 	s := reflect.ValueOf(memStat)
 	var val float64
-
-	log.Println("Load Runtime metrics")
 	for _, metric := range MetricsNames {
 		field := s.FieldByName(metric)
 
@@ -106,11 +111,11 @@ func (m *MetricsMap) CollectMetrics() {
 	} else {
 		m.CounterMetrics["PollCount"] = 1
 	}
-	m.GaugeMetrics["RandomValue"] = randFloat(-100000, 100000)
-
+	m.GaugeMetrics["RandomValue"] = RandFloat(-100000, 100000)
+	log.Println("Finishing parse metrics")
 }
 
-func randFloat(min, max float64) float64 {
+func RandFloat(min, max float64) float64 {
 	return min + rand.Float64()*(max-min)
 }
 
