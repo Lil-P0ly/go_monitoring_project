@@ -1,6 +1,7 @@
 package handler
 
 import (
+	_ "embed"
 	"fmt"
 	"html/template"
 	"log"
@@ -14,6 +15,9 @@ import (
 type MemoryStorageHandler struct {
 	Storage models.Storage
 }
+
+//go:embed templates/index.html
+var indexTmpl string
 
 func NewMSHandlerWithStorage(s models.Storage) *MemoryStorageHandler {
 	return &MemoryStorageHandler{Storage: s}
@@ -125,7 +129,7 @@ func (msh *MemoryStorageHandler) PrintMetricsHTML(w http.ResponseWriter, r *http
 		GaugeMetrics:   msh.Storage.GetGauges(),
 		CounterMetrics: msh.Storage.GetCounters(),
 	}
-	tmpl, err := template.ParseFiles("/home/user/dev/go/yp/go-pro/go_monitoring_project/internal/server/templates/index.html")
+	tmpl, err := template.New("index").Parse(indexTmpl)
 
 	if err != nil {
 		log.Println("Fail to open template fail for main page")
