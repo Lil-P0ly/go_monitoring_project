@@ -6,4 +6,7 @@ type Storage interface {
 
 	GetGauges() map[string][]float64
 	GetCounters() map[string][]int64
+
+	GetLastGauge(metricName string) (float64, error)
+	GetLastCounter(metricName string) (int64, error)
 }

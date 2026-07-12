@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -119,6 +120,94 @@ func TestGetCounters(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ans_map := tt.input.GetCounters()
 			assert.Equal(t, ans_map, tt.want)
+
+		})
+	}
+}
+
+func TestGetLastGauge(t *testing.T) {
+
+	var tests = []struct {
+		name             string
+		ms               MemStorage
+		metricName       string
+		wantValue        float64
+		wantError        bool
+		wantErrorMessage string
+	}{
+		{
+			name:       "Test-Exist-Metric",
+			ms:         MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			metricName: "bar",
+			wantValue:  1.1,
+			wantError:  false,
+		},
+		{
+			name:             "Test-NonExist-Metric",
+			ms:               MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			metricName:       "foof",
+			wantError:        true,
+			wantErrorMessage: "Metric not fount in MemStorage",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			val, err := tt.ms.GetLastGauge(tt.metricName)
+
+			if !tt.wantError {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantValue, val)
+			} else {
+				log.Println(err)
+				assert.Error(t, err)
+				assert.EqualError(t, err, tt.wantErrorMessage)
+
+			}
+
+		})
+	}
+}
+
+func TestGetLastCounter(t *testing.T) {
+
+	var tests = []struct {
+		name             string
+		ms               MemStorage
+		metricName       string
+		wantValue        int64
+		wantError        bool
+		wantErrorMessage string
+	}{
+		{
+			name:       "Test-Exist-Metric",
+			ms:         MemStorage{CounterMetrics: map[string][]int64{"du": {1}, "mb": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			metricName: "mb",
+			wantValue:  2,
+			wantError:  false,
+		},
+		{
+			name:             "Test-NonExist-Metric",
+			ms:               MemStorage{CounterMetrics: map[string][]int64{"du": {1}, "mb": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			metricName:       "foof",
+			wantError:        true,
+			wantErrorMessage: "Metric not fount in MemStorage",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			val, err := tt.ms.GetLastCounter(tt.metricName)
+
+			if !tt.wantError {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.wantValue, val)
+			} else {
+				log.Println(err)
+				assert.Error(t, err)
+				assert.EqualError(t, err, tt.wantErrorMessage)
+
+			}
 
 		})
 	}
