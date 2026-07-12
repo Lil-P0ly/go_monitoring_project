@@ -222,14 +222,14 @@ func TestMemoryStorageHandlerPrintLastValue(t *testing.T) {
 			method:         http.MethodGet,
 			path:           path{metricType: "gauge", metricName: "missing"},
 			wantStatusCode: http.StatusNotFound,
-			wantResponse:   "Metric not fount in MemStorage",
+			wantResponse:   "Metric not found in MemStorage",
 		},
 		{
 			name:           "Not found counter",
 			method:         http.MethodGet,
 			path:           path{metricType: "counter", metricName: "missing"},
 			wantStatusCode: http.StatusNotFound,
-			wantResponse:   "Metric not fount in MemStorage",
+			wantResponse:   "Metric not found in MemStorage",
 		},
 	}
 	for _, tt := range tests {

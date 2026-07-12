@@ -42,7 +42,7 @@ func (ms *MemStorage) GetCounters() map[string][]int64 {
 func (ms *MemStorage) GetLastGauge(metricName string) (float64, error) {
 	slice, ok := ms.GaugeMetrics[metricName]
 	if !ok {
-		return 0, errors.New("Metric not fount in MemStorage")
+		return 0, errors.New("Metric not found in MemStorage")
 	}
 	if len(slice) == 0 {
 		return 0, errors.New("Metrics-slice is empty")
@@ -53,7 +53,7 @@ func (ms *MemStorage) GetLastGauge(metricName string) (float64, error) {
 func (ms *MemStorage) GetLastCounter(metricName string) (int64, error) {
 	slice, ok := ms.CounterMetrics[metricName]
 	if !ok {
-		return 0, errors.New("Metric not fount in MemStorage")
+		return 0, errors.New("Metric not found in MemStorage")
 	}
 	if len(slice) == 0 {
 		return 0, errors.New("Metrics-slice is empty")

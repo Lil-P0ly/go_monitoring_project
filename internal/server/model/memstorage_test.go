@@ -147,7 +147,7 @@ func TestGetLastGauge(t *testing.T) {
 			ms:               MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
 			metricName:       "foof",
 			wantError:        true,
-			wantErrorMessage: "Metric not fount in MemStorage",
+			wantErrorMessage: "Metric not found in MemStorage",
 		},
 	}
 
@@ -191,7 +191,7 @@ func TestGetLastCounter(t *testing.T) {
 			ms:               MemStorage{CounterMetrics: map[string][]int64{"du": {1}, "mb": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
 			metricName:       "foof",
 			wantError:        true,
-			wantErrorMessage: "Metric not fount in MemStorage",
+			wantErrorMessage: "Metric not found in MemStorage",
 		},
 	}
 
