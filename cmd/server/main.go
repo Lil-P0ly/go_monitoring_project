@@ -22,14 +22,9 @@ func main() {
 		w.Write([]byte("method is not valid"))
 	})
 
-	r.Route("/", func(r chi.Router) {
-		r.Get("/", msh.PrintMetricsHTML)
-
-		r.Route("/update", func(r chi.Router) {
-			r.Get("/{metrics_type}/{metrics_name}", msh.PrintLastValue)
-			r.Post("/{metrics_type}/{metrics_name}/{metrics_value}", msh.AddValue)
-		})
-	})
+	r.Get("/", msh.PrintMetricsHTML)
+	r.Post("/update/{metrics_type}/{metrics_name}/{metrics_value}", msh.AddValue)
+	r.Get("/value/{metrics_type}/{metrics_name}", msh.PrintLastValue)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)

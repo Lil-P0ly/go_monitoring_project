@@ -169,7 +169,7 @@ func TestMemoryStorageHandlerPrintLastValue(t *testing.T) {
 	msh := NewMSHandlerWithStorage(memStorage)
 
 	r := chi.NewRouter()
-	r.Handle("/update/{metrics_type}/{metrics_name}", http.HandlerFunc(msh.PrintLastValue))
+	r.Handle("/value/{metrics_type}/{metrics_name}", http.HandlerFunc(msh.PrintLastValue))
 
 	type path struct {
 		metricType string
@@ -238,7 +238,7 @@ func TestMemoryStorageHandlerPrintLastValue(t *testing.T) {
 				tt.prep()
 			}
 
-			pathStr := fmt.Sprintf("/update/%s/%s", tt.path.metricType, tt.path.metricName)
+			pathStr := fmt.Sprintf("/value/%s/%s", tt.path.metricType, tt.path.metricName)
 			request := httptest.NewRequest(tt.method, pathStr, nil)
 
 			w := httptest.NewRecorder()
