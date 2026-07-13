@@ -79,6 +79,7 @@ func (msh *MemoryStorageHandler) PrintLastValue(w http.ResponseWriter, r *http.R
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(strconv.FormatFloat(val, 'f', -1, 64)))
 
 	case string(models.MetricsTypeCounter):
@@ -88,30 +89,13 @@ func (msh *MemoryStorageHandler) PrintLastValue(w http.ResponseWriter, r *http.R
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(strconv.FormatInt(val, 10)))
 
 	default:
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-}
-
-func (msh *MemoryStorageHandler) NotFound(w http.ResponseWriter, r *http.Request) {
-	log.Println("Not found handler")
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	metricType := r.PathValue("metrics_type")
-
-	if metricType != string(models.MetricsTypeCounter) && metricType != string(models.MetricsTypeGauge) {
-		http.Error(w, "Bad Request", http.StatusBadRequest)
-		return
-	}
-	http.Error(w, "Not Found", http.StatusNotFound)
-
 }
 
 func (msh *MemoryStorageHandler) PrintMetricsHTML(w http.ResponseWriter, r *http.Request) {

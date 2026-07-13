@@ -18,8 +18,8 @@ func main() {
 	msh := handler.NewMSHandlerWithStorage(memStorage)
 
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(405)
-		w.Write([]byte("method is not valid"))
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte("Method Not Allowed"))
 	})
 
 	r.Get("/", msh.PrintMetricsHTML)
