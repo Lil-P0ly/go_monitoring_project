@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{{ .Title}}</title>
+    </head>
+    <body>
+        <h3> Counter Metrics </h3>
+        {{ range $key, $value := .CounterMetrics }}
+            <li><strong>{{ $key }}</strong>: {{ $value }}</li>
+        {{ end }}
+
+
+        <h3> Gauge Metrics </h3>
+        {{ range $key, $value := .GaugeMetrics }}
+            <li><strong>{{ $key }}</strong>: {{ $value }}</li>
+        {{ end }}
+
+    </body>
+</html>
