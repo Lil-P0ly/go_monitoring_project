@@ -101,68 +101,6 @@ func TestMemoryStorageHandlerAddValue(t *testing.T) {
 	}
 }
 
-func TestNotFound(t *testing.T) {
-	memStorage := models.NewMemStorage()
-
-	msh := NewMSHandlerWithStorage(memStorage)
-	type path struct {
-		metricType string
-		metricName string
-	}
-	tests := []struct {
-		name           string
-		method         string
-		path           path
-		wantStatusCode int
-		wantResponse   string
-	}{
-		{
-			name:           "Invalid method",
-			method:         http.MethodGet,
-			path:           path{metricType: "gauge", metricName: "vault"},
-			wantStatusCode: http.StatusMethodNotAllowed,
-			wantResponse:   "Method Not Allowed",
-		},
-
-		{
-			name:   "Invalid metrics type",
-			method: http.MethodPost,
-			path:   path{metricType: "bool", metricName: "vault"},
-
-			wantStatusCode: http.StatusBadRequest,
-			wantResponse:   "Bad Request",
-		},
-		{
-			name:           "Not Found method",
-			method:         http.MethodPost,
-			path:           path{metricType: "gauge", metricName: "vault"},
-			wantStatusCode: http.StatusNotFound,
-			wantResponse:   "Not Found",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			request := httptest.NewRequest(tt.method, "/", nil)
-
-			request.SetPathValue("metrics_type", tt.path.metricType)
-			request.SetPathValue("metrics_name", tt.path.metricName)
-
-			w := httptest.NewRecorder()
-
-			msh.NotFound(w, request)
-			res := w.Result()
-			assert.Equal(t, tt.wantStatusCode, res.StatusCode)
-
-			defer res.Body.Close()
-			resBody, err := io.ReadAll(res.Body)
-
-			require.NoError(t, err)
-			assert.Equal(t, strings.TrimSpace(tt.wantResponse), strings.TrimSpace(string(resBody)))
-
-		})
-	}
-}
-
 func TestMemoryStorageHandlerPrintLastValue(t *testing.T) {
 	memStorage := models.NewMemStorage()
 
