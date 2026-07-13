@@ -205,7 +205,7 @@ func TestMemoryStorageHandlerPrintLastValue(t *testing.T) {
 				msh.Storage.AddGauge("vault", 11.1)
 			},
 			wantStatusCode: http.StatusOK,
-			wantResponse:   "11.100000",
+			wantResponse:   "11.1",
 		},
 		{
 			name:   "Valid counter value",

@@ -18,16 +18,16 @@ func TestAddGauge(t *testing.T) {
 	}{
 		{
 			name:     "Test-1",
-			input:    MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
-			want:     MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1, 1.2}}},
+			input:    MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 2}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			want:     MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 2}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1, 1.2}}},
 			addvalue: 1.2,
 			addkey:   "bar",
 		},
 
 		{
 			name:     "Test-2",
-			input:    MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
-			want:     MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}, "fuz": {-0.999}}},
+			input:    MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 2}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			want:     MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 2}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}, "fuz": {-0.999}}},
 			addvalue: -0.999,
 			addkey:   "fuz",
 		},
@@ -54,16 +54,16 @@ func TestAddCounter(t *testing.T) {
 	}{
 		{
 			name:     "Test-1",
-			input:    MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
-			want:     MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {2, 12}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			input:    MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 2}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			want:     MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 14}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
 			addvalue: 12,
 			addkey:   "bar",
 		},
 
 		{
 			name:     "Test-2",
-			input:    MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
-			want:     MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {2}, "fuz": {-2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			input:    MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 2}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			want:     MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 2, "fuz": -2}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
 			addvalue: -2,
 			addkey:   "fuz",
 		},
@@ -88,7 +88,7 @@ func TestGetGauges(t *testing.T) {
 	}{
 		{
 			name:  "Test-1",
-			input: MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {2}}, GaugeMetrics: map[string][]float64{"foo": {1.0, 1.01}, "bar": {1.1}}},
+			input: MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 2}, GaugeMetrics: map[string][]float64{"foo": {1.0, 1.01}, "bar": {1.1}}},
 			want:  map[string][]float64{"foo": {1.0, 1.01}, "bar": {1.1}},
 		},
 	}
@@ -107,12 +107,12 @@ func TestGetCounters(t *testing.T) {
 	var tests = []struct {
 		name  string
 		input MemStorage
-		want  map[string][]int64
+		want  map[string]int64
 	}{
 		{
 			name:  "Test-1",
-			input: MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
-			want:  map[string][]int64{"foo": {1}, "bar": {1, 2}},
+			input: MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 3}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			want:  map[string]int64{"foo": 1, "bar": 3},
 		},
 	}
 
@@ -137,14 +137,14 @@ func TestGetLastGauge(t *testing.T) {
 	}{
 		{
 			name:       "Test-Exist-Metric",
-			ms:         MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			ms:         MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 3}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
 			metricName: "bar",
 			wantValue:  1.1,
 			wantError:  false,
 		},
 		{
 			name:             "Test-NonExist-Metric",
-			ms:               MemStorage{CounterMetrics: map[string][]int64{"foo": {1}, "bar": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			ms:               MemStorage{CounterMetrics: map[string]int64{"foo": 1, "bar": 3}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
 			metricName:       "foof",
 			wantError:        true,
 			wantErrorMessage: "Metric not found in MemStorage",
@@ -181,14 +181,14 @@ func TestGetLastCounter(t *testing.T) {
 	}{
 		{
 			name:       "Test-Exist-Metric",
-			ms:         MemStorage{CounterMetrics: map[string][]int64{"du": {1}, "mb": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			ms:         MemStorage{CounterMetrics: map[string]int64{"du": 1, "mb": 3}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
 			metricName: "mb",
-			wantValue:  2,
+			wantValue:  3,
 			wantError:  false,
 		},
 		{
 			name:             "Test-NonExist-Metric",
-			ms:               MemStorage{CounterMetrics: map[string][]int64{"du": {1}, "mb": {1, 2}}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
+			ms:               MemStorage{CounterMetrics: map[string]int64{"du": 1, "mb": 3}, GaugeMetrics: map[string][]float64{"foo": {1.0}, "bar": {1.1}}},
 			metricName:       "foof",
 			wantError:        true,
 			wantErrorMessage: "Metric not found in MemStorage",

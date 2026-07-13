@@ -2,7 +2,6 @@ package handler
 
 import (
 	_ "embed"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -80,8 +79,7 @@ func (msh *MemoryStorageHandler) PrintLastValue(w http.ResponseWriter, r *http.R
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		str := fmt.Sprintf("%f", val)
-		w.Write([]byte(str))
+		w.Write([]byte(strconv.FormatFloat(val, 'f', -1, 64)))
 
 	case string(models.MetricsTypeCounter):
 		log.Println("get last counter value")
@@ -90,8 +88,7 @@ func (msh *MemoryStorageHandler) PrintLastValue(w http.ResponseWriter, r *http.R
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		str := fmt.Sprintf("%d", val)
-		w.Write([]byte(str))
+		w.Write([]byte(strconv.FormatInt(val, 10)))
 
 	default:
 		http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -122,7 +119,7 @@ func (msh *MemoryStorageHandler) PrintMetricsHTML(w http.ResponseWriter, r *http
 	type ViewData struct {
 		Title          string
 		GaugeMetrics   map[string][]float64
-		CounterMetrics map[string][]int64
+		CounterMetrics map[string]int64
 	}
 	data := ViewData{
 		Title:          "Metrics Project",
