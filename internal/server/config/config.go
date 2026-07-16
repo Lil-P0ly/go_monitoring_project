@@ -1,4 +1,4 @@
-package agent
+package config
 
 import (
 	"errors"
@@ -7,9 +7,7 @@ import (
 )
 
 type Config struct {
-	Address        string
-	ReportInterval int
-	PollInterval   int
+	Address string
 }
 
 func ParseFlags() (Config, error) {
@@ -17,8 +15,6 @@ func ParseFlags() (Config, error) {
 
 	cfgFlagset := flag.NewFlagSet("cfg", flag.ContinueOnError)
 	cfgFlagset.StringVar(&cfg.Address, "a", "localhost:8080", "endpoint")
-	cfgFlagset.IntVar(&cfg.ReportInterval, "r", 10, "report interval")
-	cfgFlagset.IntVar(&cfg.PollInterval, "p", 2, "poll interval")
 	err := cfgFlagset.Parse(os.Args[1:])
 
 	if err != nil {

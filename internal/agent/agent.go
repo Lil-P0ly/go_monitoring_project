@@ -16,8 +16,8 @@ func New(cfg Config, m model.Metrics) *Agent {
 }
 
 func (a *Agent) Run() {
-	poll := time.NewTicker(a.cfg.PollInterval)
-	report := time.NewTicker(a.cfg.ReportInterval)
+	poll := time.NewTicker(time.Duration(a.cfg.PollInterval) * time.Second)
+	report := time.NewTicker(time.Duration(a.cfg.ReportInterval) * time.Second)
 	defer poll.Stop()
 	defer report.Stop()
 	for {
