@@ -3,26 +3,30 @@ package agent
 import (
 	"time"
 
+	"github.com/Lil-P0ly/go_monitoring_project/internal/agent/config"
 	"github.com/Lil-P0ly/go_monitoring_project/internal/agent/model"
 )
 
-var pollInterval = 2 * time.Second
-var reportInterval = 10 * time.Second
+type Agent struct {
+	cfg     config.Config
+	metrics model.Metrics
+}
 
-func Run(m model.Metrics) {
+func New(cfg config.Config, m model.Metrics) *Agent {
+	return &Agent{cfg: cfg, metrics: m}
+}
 
-	tickerCollect := time.NewTicker(pollInterval)
-	tickerSend := time.NewTicker(reportInterval)
-
-	defer tickerCollect.Stop()
-	defer tickerSend.Stop()
+func (a *Agent) Run() {
+	poll := time.NewTicker(time.Duration(a.cfg.PollInterval) * time.Second)
+	report := time.NewTicker(time.Duration(a.cfg.ReportInterval) * time.Second)
+	defer poll.Stop()
+	defer report.Stop()
 	for {
 		select {
-		case <-tickerCollect.C:
-			m.CollectMetrics()
-		case <-tickerSend.C:
-			m.SendMetrics("localhost:8080")
+		case <-poll.C:
+			a.metrics.CollectMetrics()
+		case <-report.C:
+			a.metrics.SendMetrics(a.cfg.Address)
 		}
 	}
-
 }
