@@ -5,11 +5,12 @@ import (
 	"log"
 
 	"github.com/Lil-P0ly/go_monitoring_project/internal/agent"
+	"github.com/Lil-P0ly/go_monitoring_project/internal/agent/config"
 	"github.com/Lil-P0ly/go_monitoring_project/internal/agent/model"
 )
 
 func main() {
-	cfg, err := agent.ParseFlags()
+	cfg, err := config.ParseFlags()
 	if err != nil {
 		fmt.Println(err)
 		return
