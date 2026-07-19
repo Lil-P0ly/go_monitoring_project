@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -24,5 +25,31 @@ func ParseFlags() (Config, error) {
 	if err != nil {
 		return Config{}, errors.New("Unknow argument")
 	}
+
+	addr, exists := os.LookupEnv("ADDRESS")
+	if exists {
+		cfg.Address = addr
+	}
+
+	reportInterval, exists := os.LookupEnv("REPORT_INTERVAL")
+	if exists {
+		ReportIntervalInt, err := strconv.Atoi(reportInterval)
+		if err != nil {
+			return Config{}, errors.New("Bad enviromnet value")
+
+		}
+		cfg.ReportInterval = ReportIntervalInt
+	}
+
+	pollInterval, exists := os.LookupEnv("POLL_INTERVAL")
+	if exists {
+		PollIntervalInt, err := strconv.Atoi(pollInterval)
+		if err != nil {
+			return Config{}, errors.New("Bad enviromnet value")
+
+		}
+		cfg.PollInterval = PollIntervalInt
+	}
+
 	return cfg, nil
 }
