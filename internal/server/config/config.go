@@ -20,5 +20,11 @@ func ParseFlags() (Config, error) {
 	if err != nil {
 		return Config{}, errors.New("Unknow argument")
 	}
+
+	addr, exists := os.LookupEnv("ADDRESS")
+	if exists {
+		cfg.Address = addr
+	}
+
 	return cfg, nil
 }
