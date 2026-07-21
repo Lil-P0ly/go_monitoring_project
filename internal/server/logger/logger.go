@@ -23,21 +23,36 @@ func InitLogger(level string) error {
 }
 
 func Info(message string, fields ...zap.Field) {
+	if ZapLog == nil {
+		return
+	}
 	ZapLog.Info(message, fields...)
 }
 
 func Debug(message string, fields ...zap.Field) {
+	if ZapLog == nil {
+		return
+	}
 	ZapLog.Debug(message, fields...)
 }
 
 func Error(message string, fields ...zap.Field) {
+	if ZapLog == nil {
+		return
+	}
 	ZapLog.Error(message, fields...)
 }
 
 func Fatal(message string, fields ...zap.Field) {
+	if ZapLog == nil {
+		return
+	}
 	ZapLog.Fatal(message, fields...)
 }
 
 func Sync() {
+	if ZapLog == nil {
+		return
+	}
 	ZapLog.Sync()
 }

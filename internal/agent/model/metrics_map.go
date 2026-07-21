@@ -2,11 +2,12 @@ package model
 
 import (
 	"fmt"
-	"log"
 	"math/rand/v2"
 	"net/http"
 	"reflect"
 	"runtime"
+
+	"github.com/Lil-P0ly/go_monitoring_project/internal/agent/logger"
 )
 
 var MetricsNames = []string{
@@ -45,13 +46,13 @@ type MetricsMap struct {
 
 func (m *MetricsMap) SendMetrics(url string) error {
 
-	log.Println("Start send metric to server")
+	logger.Info("Start send metric to server")
 	for metric_name, metric_value := range m.GaugeMetrics {
 		url := fmt.Sprintf("http://%s/update/gauge/%v/%f", url, metric_name, metric_value)
 		_, err := http.Post(url, "text/plain", nil)
 
 		if err != nil {
-			log.Printf("Failed send metrics to server, %v", err)
+			logger.Errorf("Failed send metrics to server, %v", err)
 			return err
 		}
 		// log.Println(resp.StatusCode)
@@ -62,7 +63,7 @@ func (m *MetricsMap) SendMetrics(url string) error {
 		_, err := http.Post(url, "text/plain", nil)
 
 		if err != nil {
-			log.Printf("Failed send metrics to server, %v", err)
+			logger.Errorf("Failed send metrics to server, %v", err)
 			return err
 		}
 		// log.Println(resp.StatusCode)
@@ -76,8 +77,8 @@ func (m *MetricsMap) CollectMetrics() {
 	var memStat runtime.MemStats
 	runtime.ReadMemStats(&memStat)
 
-	log.Println("Load Runtime metrics")
-	log.Println("Start parsing metrics")
+	logger.Info("Load Runtime metrics")
+	logger.Info("Start parsing metrics")
 	m.ParseMetricsToStruct(memStat)
 
 }
@@ -99,7 +100,7 @@ func (m *MetricsMap) ParseMetricsToStruct(memStat runtime.MemStats) {
 			val = float64(field.Float())
 
 		default:
-			log.Printf("unsupported field type: %s", field.Kind())
+			logger.Errorf("unsupported field type: %s", field.Kind())
 			continue
 		}
 		m.GaugeMetrics[metric] = val
@@ -112,7 +113,7 @@ func (m *MetricsMap) ParseMetricsToStruct(memStat runtime.MemStats) {
 		m.CounterMetrics["PollCount"] = 1
 	}
 	m.GaugeMetrics["RandomValue"] = RandFloat(-100000, 100000)
-	log.Println("Finishing parse metrics")
+	logger.Info("Finishing parse metrics")
 }
 
 func RandFloat(min, max float64) float64 {
