@@ -29,6 +29,11 @@ func (s *Server) routes() {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		w.Write([]byte("Method Not Allowed"))
 	})
+
+	// middleware
+	s.router.Use(s.handler.LogRequestMiddleware)
+
+	// handlers
 	s.router.Get("/", s.handler.PrintMetricsHTML)
 	s.router.Post("/update/{metrics_type}/{metrics_name}/{metrics_value}", s.handler.AddValue)
 	s.router.Get("/value/{metrics_type}/{metrics_name}", s.handler.PrintLastValue)
