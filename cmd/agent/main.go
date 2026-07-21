@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/Lil-P0ly/go_monitoring_project/internal/agent"
 	"github.com/Lil-P0ly/go_monitoring_project/internal/agent/config"
+	"github.com/Lil-P0ly/go_monitoring_project/internal/agent/logger"
 	"github.com/Lil-P0ly/go_monitoring_project/internal/agent/model"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -15,7 +16,15 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	log.Printf("%s %d %d", cfg.Address, cfg.PollInterval, cfg.ReportInterval)
+	if err := logger.InitLogger(cfg.Level); err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer logger.Sync()
+	logger.Info("Starting metrics agent",
+		zap.String("URL", cfg.Address),
+		zap.String("LogLevel", cfg.Level),
+	)
 	m := model.NewMetricsMap()
 	agent.New(cfg, m).Run()
 }

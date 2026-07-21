@@ -1,7 +1,6 @@
 package models
 
 import (
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -159,7 +158,6 @@ func TestGetLastGauge(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.wantValue, val)
 			} else {
-				log.Println(err)
 				assert.Error(t, err)
 				assert.EqualError(t, err, tt.wantErrorMessage)
 
@@ -203,7 +201,6 @@ func TestGetLastCounter(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.wantValue, val)
 			} else {
-				log.Println(err)
 				assert.Error(t, err)
 				assert.EqualError(t, err, tt.wantErrorMessage)
 

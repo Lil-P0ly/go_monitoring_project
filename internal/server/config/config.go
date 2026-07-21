@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Address string
+	Level   string
 }
 
 func ParseFlags() (Config, error) {
@@ -15,6 +16,8 @@ func ParseFlags() (Config, error) {
 
 	cfgFlagset := flag.NewFlagSet("cfg", flag.ContinueOnError)
 	cfgFlagset.StringVar(&cfg.Address, "a", "localhost:8080", "endpoint")
+	cfgFlagset.StringVar(&cfg.Level, "l", "info", "loglevel")
+
 	err := cfgFlagset.Parse(os.Args[1:])
 
 	if err != nil {
@@ -24,6 +27,11 @@ func ParseFlags() (Config, error) {
 	addr, exists := os.LookupEnv("ADDRESS")
 	if exists {
 		cfg.Address = addr
+	}
+
+	loglevel, exists := os.LookupEnv("LEVEL")
+	if exists {
+		cfg.Level = loglevel
 	}
 
 	return cfg, nil

@@ -11,6 +11,7 @@ type Config struct {
 	Address        string
 	ReportInterval int
 	PollInterval   int
+	Level          string
 }
 
 func ParseFlags() (Config, error) {
@@ -20,6 +21,7 @@ func ParseFlags() (Config, error) {
 	cfgFlagset.StringVar(&cfg.Address, "a", "localhost:8080", "endpoint")
 	cfgFlagset.IntVar(&cfg.ReportInterval, "r", 10, "report interval")
 	cfgFlagset.IntVar(&cfg.PollInterval, "p", 2, "poll interval")
+	cfgFlagset.StringVar(&cfg.Level, "l", "info", "loglevel")
 	err := cfgFlagset.Parse(os.Args[1:])
 
 	if err != nil {
@@ -29,6 +31,11 @@ func ParseFlags() (Config, error) {
 	addr, exists := os.LookupEnv("ADDRESS")
 	if exists {
 		cfg.Address = addr
+	}
+
+	loglevel, exists := os.LookupEnv("LEVEL")
+	if exists {
+		cfg.Level = loglevel
 	}
 
 	reportInterval, exists := os.LookupEnv("REPORT_INTERVAL")
