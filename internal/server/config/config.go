@@ -31,7 +31,7 @@ func ParseFlags() (Config, error) {
 
 	loglevel, exists := os.LookupEnv("LEVEL")
 	if exists {
-		cfg.Address = loglevel
+		cfg.Level = loglevel
 	}
 
 	return cfg, nil
