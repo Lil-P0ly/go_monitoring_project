@@ -17,6 +17,7 @@ var MetricsNames = []string{
 	"BuckHashSys",
 	"Frees",
 	"GCCPUFraction",
+	"GCSys",
 	"HeapAlloc",
 	"HeapIdle",
 	"HeapInuse",
