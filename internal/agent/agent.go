@@ -9,10 +9,10 @@ import (
 
 type Agent struct {
 	cfg     config.Config
-	metrics model.Metrics
+	metrics model.MetricSender
 }
 
-func New(cfg config.Config, m model.Metrics) *Agent {
+func New(cfg config.Config, m model.MetricSender) *Agent {
 	return &Agent{cfg: cfg, metrics: m}
 }
 
@@ -26,7 +26,7 @@ func (a *Agent) Run() {
 		case <-poll.C:
 			a.metrics.CollectMetrics()
 		case <-report.C:
-			a.metrics.SendMetrics(a.cfg.Address)
+			a.metrics.SendMetricJSON(a.cfg.Address)
 		}
 	}
 }

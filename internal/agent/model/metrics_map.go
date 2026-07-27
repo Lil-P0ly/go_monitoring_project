@@ -1,6 +1,8 @@
 package model
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"math/rand/v2"
 	"net/http"
@@ -15,6 +17,7 @@ var MetricsNames = []string{
 	"BuckHashSys",
 	"Frees",
 	"GCCPUFraction",
+	"GCSys",
 	"HeapAlloc",
 	"HeapIdle",
 	"HeapInuse",
@@ -70,6 +73,63 @@ func (m *MetricsMap) SendMetrics(url string) error {
 	}
 	return nil
 
+}
+
+func (m *MetricsMap) SendMetricJSON(addr string) error {
+
+	logger.Info("Start send JSON metric to server")
+	endpoint := fmt.Sprintf("http://%s/update/", addr)
+
+	for metricName, metricValue := range m.GaugeMetrics {
+		value := metricValue
+		metric := Metrics{
+			ID:    metricName,
+			MType: "gauge",
+			Value: &value,
+		}
+		if err := postMetricJSON(endpoint, metric); err != nil {
+			logger.Errorf("Failed send gauge metric %s to server, %v", metricName, err)
+			return err
+		}
+	}
+
+	for metricName, metricValue := range m.CounterMetrics {
+		delta := metricValue
+		metric := Metrics{
+			ID:    metricName,
+			MType: "counter",
+			Delta: &delta,
+		}
+		if err := postMetricJSON(endpoint, metric); err != nil {
+			logger.Errorf("Failed send counter metric %s to server, %v", metricName, err)
+			return err
+		}
+	}
+	return nil
+
+}
+
+func postMetricJSON(url string, metric Metrics) error {
+	body, err := json.Marshal(metric)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code from server: %d", resp.StatusCode)
+	}
+
+	var response Metrics
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *MetricsMap) CollectMetrics() {

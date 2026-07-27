@@ -1,6 +1,7 @@
 package model
 
-type Metrics interface {
+type MetricSender interface {
 	SendMetrics(string) error
+	SendMetricJSON(string) error
 	CollectMetrics()
 }

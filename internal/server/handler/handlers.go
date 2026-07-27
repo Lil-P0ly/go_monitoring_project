@@ -2,9 +2,11 @@ package handler
 
 import (
 	_ "embed"
+	"encoding/json"
 	"html/template"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Lil-P0ly/go_monitoring_project/internal/server/logger"
@@ -60,6 +62,124 @@ func (msh *MemoryStorageHandler) AddValue(w http.ResponseWriter, r *http.Request
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func (msh *MemoryStorageHandler) AddValueJSON(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ct := r.Header.Get("Content-Type")
+	if ct != "" {
+		mediaType := strings.ToLower(strings.TrimSpace(strings.Split(ct, ";")[0]))
+		if mediaType != "application/json" {
+			msg := "Content-Type header is not application/json"
+			http.Error(w, msg, http.StatusUnsupportedMediaType)
+			return
+		}
+	}
+
+	var metricsModel models.Metrics
+
+	err := json.NewDecoder(r.Body).Decode(&metricsModel)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	switch metricsModel.MType {
+	case string(models.MetricsTypeGauge):
+		logger.Info("update gauge")
+		if metricsModel.Value == nil {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+		msh.Storage.AddGauge(metricsModel.ID, *metricsModel.Value)
+		val, err := msh.Storage.GetLastGauge(metricsModel.ID)
+		if err != nil {
+			http.Error(w, "Internal error while update json-gauge response", http.StatusInternalServerError)
+			return
+		}
+		metricsModel.Value = &val
+
+	case string(models.MetricsTypeCounter):
+		logger.Info("update counter")
+		if metricsModel.Delta == nil {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+		msh.Storage.AddCounter(metricsModel.ID, *metricsModel.Delta)
+		delta, err := msh.Storage.GetLastCounter(metricsModel.ID)
+		if err != nil {
+			http.Error(w, "Internal error while update json-counter response", http.StatusInternalServerError)
+			return
+		}
+		metricsModel.Delta = &delta
+
+	default:
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(metricsModel)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func (msh *MemoryStorageHandler) GetValueJSON(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ct := r.Header.Get("Content-Type")
+	if ct != "" {
+		mediaType := strings.ToLower(strings.TrimSpace(strings.Split(ct, ";")[0]))
+		if mediaType != "application/json" {
+			msg := "Content-Type header is not application/json"
+			http.Error(w, msg, http.StatusUnsupportedMediaType)
+			return
+		}
+	}
+
+	var metricsModel models.Metrics
+	if err := json.NewDecoder(r.Body).Decode(&metricsModel); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	switch metricsModel.MType {
+	case string(models.MetricsTypeGauge):
+		val, err := msh.Storage.GetLastGauge(metricsModel.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		metricsModel.Value = &val
+
+	case string(models.MetricsTypeCounter):
+		delta, err := msh.Storage.GetLastCounter(metricsModel.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		metricsModel.Delta = &delta
+
+	default:
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(metricsModel); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (msh *MemoryStorageHandler) PrintLastValue(w http.ResponseWriter, r *http.Request) {
