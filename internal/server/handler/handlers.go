@@ -293,6 +293,11 @@ func (msh *MemoryStorageHandler) GzipDecompressMiddleware(next http.Handler) htt
 			return
 		}
 
+		if ct := r.Header.Get("Content-Type"); ct != "application/json" && ct != "text/html" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		gz, err := gzip.NewReader(r.Body)
 		if err != nil {
 			http.Error(w, "invalid gzip body", http.StatusBadRequest)
@@ -318,6 +323,11 @@ func (w gzipWriter) Write(b []byte) (int, error) {
 func (msh *MemoryStorageHandler) GzipСompressMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		if ct := r.Header.Get("Content-Type"); ct != "application/json" && ct != "text/html" {
 			next.ServeHTTP(w, r)
 			return
 		}
