@@ -293,6 +293,11 @@ func (msh *MemoryStorageHandler) GzipDecompressMiddleware(next http.Handler) htt
 			return
 		}
 
+		if ct := r.Header.Get("Content-Type"); ct != "application/json" && !strings.HasPrefix(ct, "text/html") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		gz, err := gzip.NewReader(r.Body)
 		if err != nil {
 			http.Error(w, "invalid gzip body", http.StatusBadRequest)
@@ -312,6 +317,18 @@ type gzipWriter struct {
 }
 
 func (w gzipWriter) Write(b []byte) (int, error) {
+	ct := w.Header().Get("Content-Type")
+	if ct == "" {
+		ct = http.DetectContentType(b)
+		w.Header().Set("Content-Type", ct)
+	}
+	if ct != "application/json" && !strings.HasPrefix(ct, "text/html") {
+		return w.ResponseWriter.Write(b)
+	}
+	if w.Header().Get("Content-Encoding") == "" {
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Del("Content-Length")
+	}
 	return w.Writer.Write(b)
 }
 
@@ -329,8 +346,6 @@ func (msh *MemoryStorageHandler) GzipСompressMiddleware(next http.Handler) http
 		}
 		defer gz.Close()
 
-		w.Header().Set("Content-Encoding", "gzip")
-		// передаём обработчику страницы переменную типа gzipWriter для вывода данных
 		next.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gz}, r)
 	})
 }
