@@ -233,6 +233,7 @@ func (msh *MemoryStorageHandler) PrintMetricsHTML(w http.ResponseWriter, r *http
 		GaugeMetrics:   msh.Storage.GetGauges(),
 		CounterMetrics: msh.Storage.GetCounters(),
 	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	tmpl, err := template.New("index").Parse(indexTmpl)
 
 	if err != nil {
@@ -311,9 +312,25 @@ type gzipWriter struct {
 	Writer io.Writer
 }
 
+func (w gzipWriter) WriteHeader(code int) {
+	if w.Header().Get("Content-Encoding") == "" {
+		ct := w.Header().Get("Content-Type")
+		if strings.Contains(ct, "application/json") || strings.Contains(ct, "text/html") {
+			w.Header().Set("Content-Encoding", "gzip")
+			w.Header().Del("Content-Length")
+		}
+	}
+	w.ResponseWriter.WriteHeader(code)
+}
+
 func (w gzipWriter) Write(b []byte) (int, error) {
-	if w.Header().Get("Content-Type") == "" {
-		w.Header().Set("Content-Type", http.DetectContentType(b))
+	if !strings.Contains(w.Header().Get("Content-Type"), "application/json") &&
+		!strings.Contains(w.Header().Get("Content-Type"), "text/html") {
+		return w.ResponseWriter.Write(b)
+	}
+	if w.Header().Get("Content-Encoding") == "" {
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Del("Content-Length")
 	}
 	return w.Writer.Write(b)
 }
@@ -332,8 +349,6 @@ func (msh *MemoryStorageHandler) GzipСompressMiddleware(next http.Handler) http
 		}
 		defer gz.Close()
 
-		w.Header().Set("Content-Encoding", "gzip")
-		// передаём обработчику страницы переменную типа gzipWriter для вывода данных
 		next.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gz}, r)
 	})
 }
