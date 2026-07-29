@@ -32,6 +32,8 @@ func (s *Server) routes() {
 
 	// middleware
 	s.router.Use(s.handler.LogRequestMiddleware)
+	s.router.Use(s.handler.GzipDecompressMiddleware)
+	s.router.Use(s.handler.GzipСompressMiddleware)
 
 	// handlers
 	s.router.Get("/", s.handler.PrintMetricsHTML)

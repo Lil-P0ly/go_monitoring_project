@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"compress/gzip"
 	_ "embed"
 	"encoding/json"
 	"html/template"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -231,6 +233,7 @@ func (msh *MemoryStorageHandler) PrintMetricsHTML(w http.ResponseWriter, r *http
 		GaugeMetrics:   msh.Storage.GetGauges(),
 		CounterMetrics: msh.Storage.GetCounters(),
 	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	tmpl, err := template.New("index").Parse(indexTmpl)
 
 	if err != nil {
@@ -282,4 +285,70 @@ func (lrw *loggingResponseWriter) Write(b []byte) (int, error) {
 	size, err := lrw.ResponseWriter.Write(b)
 	lrw.size += size
 	return size, err
+}
+
+func (msh *MemoryStorageHandler) GzipDecompressMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Content-Encoding") != "gzip" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		gz, err := gzip.NewReader(r.Body)
+		if err != nil {
+			http.Error(w, "invalid gzip body", http.StatusBadRequest)
+			return
+		}
+		defer gz.Close()
+
+		r.Body = io.NopCloser(gz)
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+type gzipWriter struct {
+	http.ResponseWriter
+	Writer io.Writer
+}
+
+func (w gzipWriter) WriteHeader(code int) {
+	if w.Header().Get("Content-Encoding") == "" {
+		ct := w.Header().Get("Content-Type")
+		if strings.Contains(ct, "application/json") || strings.Contains(ct, "text/html") {
+			w.Header().Set("Content-Encoding", "gzip")
+			w.Header().Del("Content-Length")
+		}
+	}
+	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w gzipWriter) Write(b []byte) (int, error) {
+	if !strings.Contains(w.Header().Get("Content-Type"), "application/json") &&
+		!strings.Contains(w.Header().Get("Content-Type"), "text/html") {
+		return w.ResponseWriter.Write(b)
+	}
+	if w.Header().Get("Content-Encoding") == "" {
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Del("Content-Length")
+	}
+	return w.Writer.Write(b)
+}
+
+func (msh *MemoryStorageHandler) GzipСompressMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		gz, err := gzip.NewWriterLevel(w, gzip.BestSpeed)
+		if err != nil {
+			io.WriteString(w, err.Error())
+			return
+		}
+		defer gz.Close()
+
+		next.ServeHTTP(gzipWriter{ResponseWriter: w, Writer: gz}, r)
+	})
 }

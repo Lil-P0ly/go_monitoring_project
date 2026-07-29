@@ -2,6 +2,7 @@ package model
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"math/rand/v2"
@@ -10,6 +11,7 @@ import (
 	"runtime"
 
 	"github.com/Lil-P0ly/go_monitoring_project/internal/agent/logger"
+	"go.uber.org/zap"
 )
 
 var MetricsNames = []string{
@@ -114,8 +116,27 @@ func postMetricJSON(url string, metric Metrics) error {
 	if err != nil {
 		return err
 	}
+	//gzip metric
+	var buf bytes.Buffer
+	g := gzip.NewWriter(&buf)
+	if _, err = g.Write(body); err != nil {
+		return err
+	}
+	if err = g.Close(); err != nil {
+		return err
+	}
 
-	resp, err := http.Post(url, "application/json", bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, url, &buf)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Encoding", "gzip")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
 	if err != nil {
 		return err
 	}
@@ -129,6 +150,9 @@ func postMetricJSON(url string, metric Metrics) error {
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return err
 	}
+	logger.Info("Send metrics to server",
+		zap.Any("response", response),
+	)
 	return nil
 }
 
